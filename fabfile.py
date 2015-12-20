@@ -30,19 +30,46 @@ def add_repository():
 
 @roles('master')
 def install_master():
-#	sudo("echo t | ufw enable")   
-#	sudo("ufw allow 22/tcp")	
-#	sudo("ufw allow 5050/tcp")	
-#	sudo("ufw allow 2181/tcp")	
-#	sudo("ufw allow 2888/tcp")	
-#	sudo("ufw allow 3888/tcp")	
-#	sudo("ufw allow 53/udp")	
+	sudo("ufw disable")
+	sudo("ufw allow 22/tcp")	
+	sudo("ufw allow 5050/tcp")	
+	sudo("ufw allow 2181/tcp")	
+	sudo("ufw allow 2888/tcp")	
+	sudo("ufw allow 3888/tcp")	
+	sudo("ufw allow 53/udp")
+       	sudo("echo t | ufw enable")  
+	append('/etc/sysctl.conf', 'net.ipv6.conf.all.disable_ipv6 = 1', use_sudo=True)
+	append('/etc/sysctl.conf', 'net.ipv6.conf.default.disable_ipv6 = 1', use_sudo=True)
+	append('/etc/sysctl.conf', 'net.ipv6.conf.lo.disable_ipv6 = 1', use_sudo=True)
+	sudo("sysctl -p")  
 	sudo("add-apt-repository ppa:webupd8team/java -y")
 	sudo("apt-get update")
 	sudo("echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections")
 	sudo("echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections")
 	sudo("apt-get install oracle-java8-installer -y")
 	sudo("apt-get install mesosphere -y")
+
+def configure_master():
+        sudo("echo 2 > /etc/mesos-master/quorum")
+	sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/mesos > /etc/mesos/zk")
+	append('/etc/zookeeper/conf/zoo.cfg', '# specify all zookeeper servers', use_sudo=True)
+        append('/etc/zookeeper/conf/zoo.cfg', 'server.1=mesos01:2888:3888', use_sudo=True)
+        append('/etc/zookeeper/conf/zoo.cfg', 'server.2=mesos03:2888:3888', use_sudo=True)
+        append('/etc/zookeeper/conf/zoo.cfg', 'server.3=mesos02:2888:3888', use_sudo=True)
+	if env.host == "mesos01": 
+		run("echo 1 > /var/lib/zookeeper/myid")
+        if env.host == "mesos02": 
+		run("echo 2 > /var/lib/zookeeper/myid")
+        if env.host == "mesos03": 
+		run("echo 3 > /var/lib/zookeeper/myid")
+	sudo("echo Cluster01 | sudo tee /etc/mesos-master/cluster")
+	sudo("mkdir -p /etc/marathon/conf")	
+	sudo("cp /etc/mesos-master/hostname /etc/marathon/conf")
+	sudo("cp /etc/mesos/zk /etc/marathon/conf/master")
+	sudo("cp /etc/marathon/conf/master /etc/marathon/conf/zk")
+        sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/marathon > /etc/marathon/conf/zk")
+
+
 @roles('slave')
 def install_slave():
 	sudo("")
