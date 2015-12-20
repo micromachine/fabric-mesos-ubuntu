@@ -1,5 +1,7 @@
 # fabric-mesos-ubuntu
 
+A simple fabric script that allows you to install on Ubuntu hosts Mesos cluster in high-availability mode and Marathon framework. 
+
 ### Available options  
 
 fab -l
