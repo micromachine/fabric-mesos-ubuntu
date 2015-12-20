@@ -45,4 +45,4 @@ def install_master():
 	sudo("apt-get install mesosphere -y")
 @roles('slave')
 def install_slave():
-
+	sudo("")
