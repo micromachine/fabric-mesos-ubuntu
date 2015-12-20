@@ -1,6 +1,6 @@
 # fabric-mesos-ubuntu
 
-### Usage : 
+### Available options  
 
 fab -l
 
@@ -10,6 +10,9 @@ fab -l
     set_hostname
     set_hosts
 
+##### Installation using ROLES 
+
+fab -R master install_master
 
 ###### add_repository
 	
