@@ -11,5 +11,19 @@ fab -l
     set_hosts
 
 
-###### add_repository 
+###### add_repository
+	
+Adding mesos repository 
+
+######	install_master 
+
+Install mesos master host, zookeeper and configure firewall 
+
+######	set_hostname
+	
+Set hostname 
+
+######	set_hosts
+
+Set hosts entry in /etc/hosts
 
