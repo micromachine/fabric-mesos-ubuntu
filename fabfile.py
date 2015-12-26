@@ -48,7 +48,6 @@ def install_master():
 	sudo("echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections")
 	sudo("apt-get install oracle-java8-installer -y")
 	sudo("apt-get install mesosphere -y")
-def configure_master():
         sudo("echo 2 > /etc/mesos-master/quorum")
 	sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/mesos > /etc/mesos/zk")
 	append('/etc/zookeeper/conf/zoo.cfg', '# specify all zookeeper servers', use_sudo=True)
@@ -74,7 +73,8 @@ def configure_master():
 	sudo("cp /etc/marathon/conf/master /etc/marathon/conf/zk")
         sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/marathon > /etc/marathon/conf/zk")
 	sudo("echo manual | sudo tee /etc/init/mesos-slave.override")
-
+	sudo("echo docker,mesos | sudo tee /etc/mesos-slave/containerizers")
+	sudo("echo 5mins | sudo tee /etc/mesos-slave/executor_registration_timeout")
 @roles('slave')
 def install_slave():
 	sudo("apt-get update")
@@ -85,6 +85,14 @@ def install_slave():
 	sudo("apt-get -y remove --purge zookeeper")
 	sudo("service mesos-slave restart")
 	sudo("echo manual | sudo tee /etc/init/mesos-master.override")
+	sudo("apt-get install haproxy -y")
+	sudo("mkdir /etc/haproxy-marathon-bridge/")
+ 	append('/etc/haproxy-marathon-bridge/marathons', 'mesos01:8080', use_sudo=True)
+        append('/etc/haproxy-marathon-bridge/marathons', 'mesos02:8080', use_sudo=True)
+        append('/etc/haproxy-marathon-bridge/marathons', 'mesos03:8080', use_sudo=True)
+	sudo("wget -O /usr/bin/haproxy-marathon-bridge https://raw.githubusercontent.com/mesosphere/marathon/master/bin/haproxy-marathon-bridge")
+	sudo("chmod +x /usr/bin/haproxy-marathon-bridge")
+	sudo("/usr/bin/haproxy-marathon-bridge install_cronjob")
 	sudo("reboot")
 @roles('all')
 def reboot_all():
