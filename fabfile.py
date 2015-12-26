@@ -7,6 +7,7 @@ env.password = 'password'
 
 env.roledefs = {
    'master': ['mesos01','mesos02','mesos03'],
+   'all': ['mesos01','mesos02','mesos03','mesos04','mesos05','mesos06'],
    'slave': ['mesos04','mesos05','mesos06']}
 
 def set_hosts():
@@ -27,7 +28,6 @@ def set_hostname():
 def add_repository():
 	sudo("sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E56151BF")
 	sudo ("echo deb http://repos.mesosphere.com/ubuntu trusty main > /etc/apt/sources.list.d/mesosphere.list")
-
 @roles('master')
 def install_master():
 	sudo("ufw disable")
@@ -48,7 +48,6 @@ def install_master():
 	sudo("echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections")
 	sudo("apt-get install oracle-java8-installer -y")
 	sudo("apt-get install mesosphere -y")
-
 def configure_master():
         sudo("echo 2 > /etc/mesos-master/quorum")
 	sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/mesos > /etc/mesos/zk")
@@ -68,8 +67,19 @@ def configure_master():
 	sudo("cp /etc/mesos/zk /etc/marathon/conf/master")
 	sudo("cp /etc/marathon/conf/master /etc/marathon/conf/zk")
         sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/marathon > /etc/marathon/conf/zk")
-
+	sudo("echo manual | sudo tee /etc/init/mesos-slave.override")
 
 @roles('slave')
 def install_slave():
-	sudo("")
+	sudo("apt-get update")
+	sudo("apt-get -y install mesos")
+	sudo("service zookeeper stop")
+	sudo("update-rc.d -f zookeeper remove")
+	sudo("echo zk://mesos01:2181,mesos02:2181,mesos03:2181/mesos > /etc/mesos/zk")
+	sudo("apt-get -y remove --purge zookeeper")
+	sudo("service mesos-slave restart")
+	sudo("echo manual | sudo tee /etc/init/mesos-master.override")
+	sudo("reboot")
+@roles('all')
+def reboot_all():
+	sudo("reboot")
