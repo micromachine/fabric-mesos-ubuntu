@@ -56,11 +56,14 @@ def configure_master():
         append('/etc/zookeeper/conf/zoo.cfg', 'server.2=mesos03:2888:3888', use_sudo=True)
         append('/etc/zookeeper/conf/zoo.cfg', 'server.3=mesos02:2888:3888', use_sudo=True)
 	if env.host == "mesos01": 
-		run("echo 1 > /var/lib/zookeeper/myid")
+		sudo("echo 1 > /var/lib/zookeeper/myid")
+		sudo("echo mesos01 > /etc/mesos-master/hostname")
         if env.host == "mesos02": 
-		run("echo 2 > /var/lib/zookeeper/myid")
+		sudo("echo 2 > /var/lib/zookeeper/myid")
+		sudo("echo mesos02 > /etc/mesos-master/hostname")
         if env.host == "mesos03": 
-		run("echo 3 > /var/lib/zookeeper/myid")
+		sudo("echo 3 > /var/lib/zookeeper/myid")
+		sudo("echo mesos03 > /etc/mesos-master/hostname")
 	sudo("echo Cluster01 | sudo tee /etc/mesos-master/cluster")
 	sudo("mkdir -p /etc/marathon/conf")	
 	sudo("cp /etc/mesos-master/hostname /etc/marathon/conf")
