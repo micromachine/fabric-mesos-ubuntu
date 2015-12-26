@@ -58,12 +58,15 @@ def configure_master():
 	if env.host == "mesos01": 
 		sudo("echo 1 > /var/lib/zookeeper/myid")
 		sudo("echo mesos01 > /etc/mesos-master/hostname")
+		sudo("cat /etc/hosts | grep mesos01  | awk {'print $1'} > /etc/mesos-master/ip")
         if env.host == "mesos02": 
 		sudo("echo 2 > /var/lib/zookeeper/myid")
 		sudo("echo mesos02 > /etc/mesos-master/hostname")
+		sudo("cat /etc/hosts | grep mesos02  | awk {'print $1'} > /etc/mesos-master/ip")
         if env.host == "mesos03": 
 		sudo("echo 3 > /var/lib/zookeeper/myid")
 		sudo("echo mesos03 > /etc/mesos-master/hostname")
+                sudo("cat /etc/hosts | grep mesos02  | awk {'print $1'} > /etc/mesos-master/ip")
 	sudo("echo Cluster01 | sudo tee /etc/mesos-master/cluster")
 	sudo("mkdir -p /etc/marathon/conf")	
 	sudo("cp /etc/mesos-master/hostname /etc/marathon/conf")
